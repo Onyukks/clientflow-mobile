@@ -114,7 +114,7 @@ export default function ReportsScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   scroll: { padding: spacing.lg },
-  statGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md, marginTop: -spacing.xl },
+  statGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md },
   miniStat: { width: "47.5%", flexGrow: 1, paddingVertical: spacing.lg },
   miniValue: { fontSize: 20, fontWeight: "800" },
   miniLabel: { fontSize: 12, fontWeight: "600", marginTop: 2 },

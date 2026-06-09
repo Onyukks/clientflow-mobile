@@ -126,4 +126,9 @@ export const api = {
 
   reports: () => request<Reports>("/api/mobile/reports"),
   billing: () => request<Billing>("/api/mobile/billing"),
+  checkout: (plan: string) =>
+    request<{ url: string }>("/api/mobile/billing/checkout", {
+      method: "POST",
+      body: JSON.stringify({ plan }),
+    }),
 };

@@ -214,8 +214,8 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  scroll: { padding: spacing.lg, paddingTop: 0 },
-  tileGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md, marginTop: -spacing.xl },
+  scroll: { padding: spacing.lg },
+  tileGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md },
   tile: {
     width: "47.5%",
     flexGrow: 1,

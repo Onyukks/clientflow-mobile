@@ -19,6 +19,7 @@ export const useDeals = () => useQuery({ queryKey: queryKeys.deals, queryFn: api
 export const useTasks = () => useQuery({ queryKey: queryKeys.tasks, queryFn: api.tasks });
 export const useReports = () => useQuery({ queryKey: queryKeys.reports, queryFn: api.reports });
 export const useBilling = () => useQuery({ queryKey: queryKeys.billing, queryFn: api.billing });
+export const useCheckout = () => useMutation({ mutationFn: (plan: string) => api.checkout(plan) });
 
 // A write to any entity can shift dashboard/report/billing metrics, so refresh broadly.
 const useInvalidateAll = () => {

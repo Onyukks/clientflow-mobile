@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import * as WebBrowser from "expo-web-browser";
 import { Ionicons } from "@expo/vector-icons";
-import { useBilling } from "@/lib/queries";
+import { useBilling, useCheckout } from "@/lib/queries";
 import { ApiError } from "@/lib/api";
 import { formatDate, formatMoney } from "@/lib/format";
-import { Badge, Card, StateView } from "@/components/ui";
+import { Badge, Card, GradientButton, StateView } from "@/components/ui";
 import { colors, gradients, labelize, radius, spacing } from "@/theme";
 
 function UsageRow({ label, value, limit, percent }: { label: string; value: number; limit: number; percent: number }) {
@@ -25,6 +27,24 @@ function UsageRow({ label, value, limit, percent }: { label: string; value: numb
 
 export default function BillingScreen() {
   const { data, isLoading, error, refetch, isRefetching } = useBilling();
+  const checkout = useCheckout();
+  const [pendingPlan, setPendingPlan] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  const onUpgrade = async (planKey: string) => {
+    setCheckoutError(null);
+    setPendingPlan(planKey);
+    try {
+      const { url } = await checkout.mutateAsync(planKey);
+      await WebBrowser.openBrowserAsync(url);
+      // Stripe updates the plan via webhook; refresh to pick up the change.
+      refetch();
+    } catch (err) {
+      setCheckoutError(err instanceof ApiError ? err.message : "Could not start checkout. Try again.");
+    } finally {
+      setPendingPlan(null);
+    }
+  };
 
   return (
     <View style={styles.safe}>
@@ -70,24 +90,41 @@ export default function BillingScreen() {
               </Card>
 
               <Text style={styles.section}>Plans</Text>
-              {data.plans.map((plan) => (
-                <Card key={plan.key} style={[styles.planCard, plan.current && styles.planCardActive]}>
-                  <View style={styles.planTop}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.planName}>{plan.name}</Text>
-                      <Text style={styles.planPrice}>{plan.price === 0 ? "Free" : `${formatMoney(plan.price)}/mo`}</Text>
+              {checkoutError ? <Text style={styles.checkoutError}>{checkoutError}</Text> : null}
+              {data.plans.map((plan) => {
+                const canUpgrade = !plan.current && plan.price > 0 && data.stripeConfigured;
+                return (
+                  <Card key={plan.key} style={[styles.planCard, plan.current && styles.planCardActive]}>
+                    <View style={styles.planTop}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.planName}>{plan.name}</Text>
+                        <Text style={styles.planPrice}>{plan.price === 0 ? "Free" : `${formatMoney(plan.price)}/mo`}</Text>
+                      </View>
+                      {plan.current ? <Badge tone={{ bg: colors.primarySoft, fg: colors.primary }} label="Current" /> : null}
                     </View>
-                    {plan.current ? <Badge tone={{ bg: colors.primarySoft, fg: colors.primary }} label="Current" /> : null}
-                  </View>
-                  <Text style={styles.planDesc}>{plan.description}</Text>
-                  {plan.features.map((feature) => (
-                    <View key={feature} style={styles.featureRow}>
-                      <Ionicons name="checkmark-circle" size={16} color={colors.success} />
-                      <Text style={styles.featureText}>{feature}</Text>
-                    </View>
-                  ))}
-                </Card>
-              ))}
+                    <Text style={styles.planDesc}>{plan.description}</Text>
+                    {plan.features.map((feature) => (
+                      <View key={feature} style={styles.featureRow}>
+                        <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                        <Text style={styles.featureText}>{feature}</Text>
+                      </View>
+                    ))}
+                    {canUpgrade ? (
+                      <View style={{ marginTop: spacing.md }}>
+                        <GradientButton
+                          title={`Upgrade to ${plan.name}`}
+                          onPress={() => onUpgrade(plan.key)}
+                          loading={pendingPlan === plan.key}
+                          disabled={pendingPlan !== null}
+                        />
+                      </View>
+                    ) : null}
+                  </Card>
+                );
+              })}
+              {!data.stripeConfigured ? (
+                <Text style={styles.planNote}>Plan upgrades are available when Stripe is configured.</Text>
+              ) : null}
 
               <Text style={styles.section}>Team</Text>
               <Card style={styles.listCard}>
@@ -144,6 +181,15 @@ const styles = StyleSheet.create({
   usageValue: { fontSize: 14, fontWeight: "700", color: colors.textMuted },
   barTrack: { height: 8, borderRadius: 4, backgroundColor: colors.slateSoft, overflow: "hidden" },
   barFill: { height: 8, borderRadius: 4, backgroundColor: colors.primary },
+  checkoutError: {
+    backgroundColor: colors.dangerSoft,
+    color: colors.danger,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    fontSize: 14,
+    marginBottom: spacing.md,
+  },
+  planNote: { fontSize: 13, color: colors.textMuted, marginTop: spacing.xs },
   planCard: { marginBottom: spacing.md, gap: spacing.xs },
   planCardActive: { borderColor: colors.primary, borderWidth: 2 },
   planTop: { flexDirection: "row", alignItems: "flex-start" },
