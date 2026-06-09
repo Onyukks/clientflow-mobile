@@ -52,6 +52,13 @@ export const formatDueLabel = (iso: string | null): string => {
   return `${MONTHS[date.getMonth()]} ${date.getDate()}`;
 };
 
+export const formatDate = (iso: string | null): string => {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "—";
+  return `${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+};
+
 export const isOverdue = (iso: string | null): boolean => {
   if (!iso) return false;
   const date = new Date(iso);

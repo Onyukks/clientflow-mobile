@@ -99,6 +99,55 @@ export type Dashboard = {
   subscription: { plan: string; status: string } | null;
 };
 
+export type Reports = {
+  headline: { accounts: number; openPipeline: number; weightedForecast: number };
+  metrics: {
+    openPipeline: number;
+    openDeals: number;
+    weightedForecast: number;
+    activeRate: number;
+    nextThirtyDayValue: number;
+    dueSoonTasks: number;
+    portfolioValue: number;
+    taskCompletionRate: number;
+    atRiskClients: number;
+  };
+  stages: {
+    stage: DealStage;
+    count: number;
+    totalValue: number;
+    weightedValue: number;
+    averageProbability: number;
+  }[];
+  clientHealth: { status: ClientStatus; count: number }[];
+  taskBreakdown: { status: TaskStatus; count: number }[];
+};
+
+export type BillingPlan = {
+  key: string;
+  name: string;
+  price: number;
+  description: string;
+  features: string[];
+  current: boolean;
+};
+
+export type Billing = {
+  plan: string;
+  planName: string;
+  price: number;
+  status: string;
+  renewalDate: string;
+  daysRemaining: number;
+  pipelineValue: number;
+  paymentMode: string;
+  stripeConfigured: boolean;
+  usage: { label: string; value: number; limit: number; percent: number }[];
+  plans: BillingPlan[];
+  members: { name: string; email: string; role: string }[];
+  history: { id: string; label: string; amount: number; date: string; status: string }[];
+};
+
 export type ApiErrorBody = {
   error: { message: string; fields?: Record<string, string> };
 };

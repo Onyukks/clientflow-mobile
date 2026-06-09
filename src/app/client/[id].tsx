@@ -1,5 +1,5 @@
 import { Linking, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useClient, useUpdateTask } from "@/lib/queries";
 import { ApiError } from "@/lib/api";
@@ -18,6 +18,7 @@ function SummaryStat({ label, value }: { label: string; value: string }) {
 }
 
 export default function ClientDetailScreen() {
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, isLoading, error, refetch, isRefetching } = useClient(id);
   const updateTask = useUpdateTask();
@@ -28,7 +29,16 @@ export default function ClientDetailScreen() {
 
   return (
     <View style={styles.safe}>
-      <Stack.Screen options={{ title: data?.name ?? "Client" }} />
+      <Stack.Screen
+        options={{
+          title: data?.name ?? "Client",
+          headerRight: () => (
+            <Pressable onPress={() => router.push(`/new?type=client&id=${id}`)} hitSlop={8}>
+              <Ionicons name="create-outline" size={22} color={colors.primary} />
+            </Pressable>
+          ),
+        }}
+      />
       <StateView
         loading={isLoading}
         error={error ? (error instanceof ApiError ? error.message : "Failed to load.") : null}

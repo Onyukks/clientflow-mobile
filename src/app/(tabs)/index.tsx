@@ -1,13 +1,14 @@
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/lib/auth";
 import { useDashboard, useUpdateTask } from "@/lib/queries";
 import { ApiError } from "@/lib/api";
 import { formatCompactMoney, formatDueLabel, formatMoney } from "@/lib/format";
 import { Badge, Card, StateView } from "@/components/ui";
-import { colors, priorityTone, radius, spacing, stageTone } from "@/theme";
+import { GradientHeader } from "@/components/gradient-header";
+import { colors, gradients, priorityTone, radius, spacing, stageTone, type GradientKey } from "@/theme";
 import type { TaskSummary } from "@/types/api";
 
 const greeting = (): string => {
@@ -17,14 +18,33 @@ const greeting = (): string => {
   return "Good evening";
 };
 
-function Metric({ label, value, note, accent }: { label: string; value: string; note: string; accent: string }) {
+function StatTile({
+  icon,
+  value,
+  label,
+  note,
+  gradient,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  value: string;
+  label: string;
+  note: string;
+  gradient: GradientKey;
+}) {
   return (
-    <Card style={styles.metric}>
-      <View style={[styles.metricAccent, { backgroundColor: accent }]} />
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={styles.metricNote}>{note}</Text>
-    </Card>
+    <LinearGradient
+      colors={gradients[gradient]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.tile}
+    >
+      <View style={styles.tileIcon}>
+        <Ionicons name={icon} size={16} color={colors.white} />
+      </View>
+      <Text style={styles.tileValue}>{value}</Text>
+      <Text style={styles.tileLabel}>{label}</Text>
+      <Text style={styles.tileNote}>{note}</Text>
+    </LinearGradient>
   );
 }
 
@@ -39,21 +59,17 @@ export default function DashboardScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.greeting}>{greeting()}</Text>
-          <Text style={styles.name} numberOfLines={1}>
-            {user?.name ?? workspace?.name ?? "ClientFlow"}
-          </Text>
-        </View>
-        <Pressable style={styles.iconButton} onPress={() => router.push("/new")} hitSlop={8}>
-          <Ionicons name="add" size={22} color={colors.primary} />
-        </Pressable>
-        <Pressable style={styles.iconButton} onPress={signOut} hitSlop={8}>
-          <Ionicons name="log-out-outline" size={20} color={colors.textMuted} />
-        </Pressable>
-      </View>
+    <View style={styles.safe}>
+      <GradientHeader
+        eyebrow={greeting()}
+        title={user?.name ?? workspace?.name ?? "ClientFlow"}
+        subtitle={workspace?.name}
+        actions={[
+          { icon: "card-outline", onPress: () => router.push("/billing") },
+          { icon: "add", onPress: () => router.push("/new") },
+          { icon: "log-out-outline", onPress: signOut },
+        ]}
+      />
 
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -66,30 +82,34 @@ export default function DashboardScreen() {
         >
           {data ? (
             <>
-              <View style={styles.metricGrid}>
-                <Metric
-                  label="Pipeline value"
+              <View style={styles.tileGrid}>
+                <StatTile
+                  icon="cash-outline"
                   value={formatCompactMoney(data.metrics.pipelineValue)}
+                  label="Pipeline value"
                   note={`${data.metrics.openDeals} open deals`}
-                  accent={colors.success}
+                  gradient="emerald"
                 />
-                <Metric
-                  label="Active clients"
+                <StatTile
+                  icon="people-outline"
                   value={String(data.metrics.activeClients)}
+                  label="Active clients"
                   note={`+${data.metrics.newClientsThisWeek} this week`}
-                  accent={colors.primary}
+                  gradient="indigo"
                 />
-                <Metric
-                  label="Open tasks"
+                <StatTile
+                  icon="checkbox-outline"
                   value={String(data.metrics.openTasks)}
+                  label="Open tasks"
                   note={`${data.metrics.dueToday} due today`}
-                  accent={colors.warning}
+                  gradient="amber"
                 />
-                <Metric
-                  label="Win confidence"
+                <StatTile
+                  icon="flame-outline"
                   value={`${data.metrics.winConfidence}%`}
+                  label="Win confidence"
                   note={`${data.metrics.hotDeals} hot deals`}
-                  accent={colors.danger}
+                  gradient="rose"
                 />
               </View>
 
@@ -126,7 +146,7 @@ export default function DashboardScreen() {
               </Card>
 
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Tasks</Text>
+                <Text style={styles.sectionTitle}>Today&apos;s tasks</Text>
                 <Pressable onPress={() => router.push("/(tabs)/tasks")}>
                   <Text style={styles.sectionLink}>See all</Text>
                 </Pressable>
@@ -164,7 +184,7 @@ export default function DashboardScreen() {
                 )}
               </Card>
 
-              <Text style={styles.sectionTitle}>Recent activity</Text>
+              <Text style={[styles.sectionTitle, { marginTop: spacing.xl }]}>Recent activity</Text>
               <Card style={[styles.listCard, { marginTop: spacing.md }]}>
                 {data.activity.length === 0 ? (
                   <Text style={styles.emptyRow}>No activity yet.</Text>
@@ -183,52 +203,52 @@ export default function DashboardScreen() {
                   ))
                 )}
               </Card>
+              <View style={{ height: spacing.xl }} />
             </>
           ) : null}
         </StateView>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-    gap: spacing.sm,
+  scroll: { padding: spacing.lg, paddingTop: 0 },
+  tileGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md, marginTop: -spacing.xl },
+  tile: {
+    width: "47.5%",
+    flexGrow: 1,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    shadowColor: "#1E293B",
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
-  greeting: { fontSize: 13, color: colors.textMuted },
-  name: { fontSize: 22, fontWeight: "800", color: colors.text },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+  tileIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "rgba(255,255,255,0.22)",
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: spacing.sm,
   },
-  scroll: { padding: spacing.lg, paddingTop: spacing.sm, gap: spacing.sm },
-  metricGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.md },
-  metric: { width: "47.5%", flexGrow: 1, paddingVertical: spacing.lg, overflow: "hidden" },
-  metricAccent: { position: "absolute", left: 0, top: 0, bottom: 0, width: 4 },
-  metricValue: { fontSize: 24, fontWeight: "800", color: colors.text },
-  metricLabel: { fontSize: 13, fontWeight: "600", color: colors.text, marginTop: spacing.xs },
-  metricNote: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  tileValue: { fontSize: 24, fontWeight: "800", color: colors.white },
+  tileLabel: { fontSize: 13, fontWeight: "700", color: colors.white, marginTop: spacing.xs },
+  tileNote: { fontSize: 12, color: "rgba(255,255,255,0.85)", marginTop: 2 },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
     marginBottom: spacing.sm,
   },
-  sectionTitle: { fontSize: 17, fontWeight: "700", color: colors.text, marginTop: spacing.lg },
-  sectionLink: { fontSize: 14, fontWeight: "600", color: colors.primary, marginTop: spacing.lg },
-  listCard: { padding: 0 },
+  sectionTitle: { fontSize: 18, fontWeight: "800", color: colors.text },
+  sectionLink: { fontSize: 14, fontWeight: "600", color: colors.primary },
+  listCard: { padding: 0, overflow: "hidden" },
   row: { flexDirection: "row", alignItems: "center", padding: spacing.lg },
   rowDivider: { borderBottomWidth: 1, borderBottomColor: colors.border },
   rowTitle: { fontSize: 15, fontWeight: "600", color: colors.text },

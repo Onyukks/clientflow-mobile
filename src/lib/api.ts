@@ -2,10 +2,12 @@ import { API_URL } from "@/lib/config";
 import type {
   ApiErrorBody,
   AuthResponse,
+  Billing,
   ClientDetail,
   ClientSummary,
   Dashboard,
   DealSummary,
+  Reports,
   SessionResponse,
   TaskSummary,
 } from "@/types/api";
@@ -113,10 +115,15 @@ export const api = {
     request<DealSummary>("/api/mobile/deals", { method: "POST", body: JSON.stringify(input) }),
   updateDeal: (id: string, input: DealInput) =>
     request<DealSummary>(`/api/mobile/deals/${id}`, { method: "PATCH", body: JSON.stringify(input) }),
+  deleteDeal: (id: string) => request<{ id: string }>(`/api/mobile/deals/${id}`, { method: "DELETE" }),
 
   tasks: () => request<{ tasks: TaskSummary[] }>("/api/mobile/tasks").then((r) => r.tasks),
   createTask: (input: TaskInput) =>
     request<TaskSummary>("/api/mobile/tasks", { method: "POST", body: JSON.stringify(input) }),
   updateTask: (id: string, input: TaskInput) =>
     request<TaskSummary>(`/api/mobile/tasks/${id}`, { method: "PATCH", body: JSON.stringify(input) }),
+  deleteTask: (id: string) => request<{ id: string }>(`/api/mobile/tasks/${id}`, { method: "DELETE" }),
+
+  reports: () => request<Reports>("/api/mobile/reports"),
+  billing: () => request<Billing>("/api/mobile/billing"),
 };

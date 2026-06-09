@@ -1,12 +1,11 @@
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTasks, useUpdateTask } from "@/lib/queries";
 import { ApiError } from "@/lib/api";
 import { formatDueLabel, isOverdue } from "@/lib/format";
 import { Badge, Card, StateView } from "@/components/ui";
-import { ListHeader } from "@/components/list-header";
+import { GradientHeader } from "@/components/gradient-header";
 import { colors, priorityTone, spacing } from "@/theme";
 import type { TaskSummary } from "@/types/api";
 
@@ -21,11 +20,13 @@ export default function TasksScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <ListHeader
+    <View style={styles.safe}>
+      <GradientHeader
+        eyebrow="Follow-ups"
         title="Tasks"
         subtitle={data ? `${openCount} open` : undefined}
-        onAdd={() => router.push("/new?type=task")}
+        gradient="sky"
+        actions={[{ icon: "add", onPress: () => router.push("/new?type=task") }]}
       />
       <StateView
         loading={isLoading}
@@ -43,39 +44,41 @@ export default function TasksScreen() {
             const done = item.status === "DONE";
             const overdue = !done && isOverdue(item.dueDate);
             return (
-              <Card style={styles.card}>
-                <Pressable onPress={() => toggle(item)} hitSlop={8} style={{ marginRight: spacing.md }}>
-                  <Ionicons
-                    name={done ? "checkmark-circle" : "ellipse-outline"}
-                    size={26}
-                    color={done ? colors.success : colors.textFaint}
-                  />
-                </Pressable>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.title, done && styles.titleDone]} numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.sub} numberOfLines={1}>
-                    {item.clientName ?? "Workspace"}
-                    {item.assigneeName ? ` · ${item.assigneeName}` : ""}
-                  </Text>
-                </View>
-                <View style={styles.right}>
-                  <Badge tone={priorityTone[item.priority]} label={item.priority} />
-                  <Text style={[styles.due, overdue && styles.dueOverdue]}>{formatDueLabel(item.dueDate)}</Text>
-                </View>
-              </Card>
+              <Pressable onPress={() => router.push(`/new?type=task&id=${item.id}`)}>
+                <Card style={styles.card}>
+                  <Pressable onPress={() => toggle(item)} hitSlop={8} style={{ marginRight: spacing.md }}>
+                    <Ionicons
+                      name={done ? "checkmark-circle" : "ellipse-outline"}
+                      size={26}
+                      color={done ? colors.success : colors.textFaint}
+                    />
+                  </Pressable>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.title, done && styles.titleDone]} numberOfLines={1}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.sub} numberOfLines={1}>
+                      {item.clientName ?? "Workspace"}
+                      {item.assigneeName ? ` · ${item.assigneeName}` : ""}
+                    </Text>
+                  </View>
+                  <View style={styles.right}>
+                    <Badge tone={priorityTone[item.priority]} label={item.priority} />
+                    <Text style={[styles.due, overdue && styles.dueOverdue]}>{formatDueLabel(item.dueDate)}</Text>
+                  </View>
+                </Card>
+              </Pressable>
             );
           }}
         />
       </StateView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  list: { padding: spacing.lg, paddingTop: spacing.xs, gap: spacing.md },
+  list: { padding: spacing.lg, gap: spacing.md },
   card: { flexDirection: "row", alignItems: "center" },
   title: { fontSize: 15, fontWeight: "600", color: colors.text },
   titleDone: { textDecorationLine: "line-through", color: colors.textFaint },

@@ -30,6 +30,10 @@ export default function RootLayout() {
               name="client/[id]"
               options={{ headerShown: true, headerBackTitle: "Back", title: "Client" }}
             />
+            <Stack.Screen
+              name="billing"
+              options={{ headerShown: true, headerBackTitle: "Back", title: "Billing" }}
+            />
             <Stack.Screen name="new" options={{ presentation: "modal", headerShown: false }} />
           </Stack>
         </AuthProvider>

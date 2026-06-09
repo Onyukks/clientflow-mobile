@@ -41,6 +41,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="clients" options={{ title: "Clients", tabBarIcon: tabIcon("people-outline") }} />
       <Tabs.Screen name="deals" options={{ title: "Deals", tabBarIcon: tabIcon("trending-up-outline") }} />
       <Tabs.Screen name="tasks" options={{ title: "Tasks", tabBarIcon: tabIcon("checkbox-outline") }} />
+      <Tabs.Screen name="reports" options={{ title: "Reports", tabBarIcon: tabIcon("bar-chart-outline") }} />
     </Tabs>
   );
 }

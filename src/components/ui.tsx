@@ -10,7 +10,8 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from "react-native";
-import { colors, radius, spacing, type Tone } from "@/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { colors, gradients, radius, spacing, type GradientKey, type Tone } from "@/theme";
 import { initials } from "@/lib/format";
 
 export function Badge({ tone, label }: { tone: Tone; label: string }) {
@@ -70,6 +71,38 @@ export function PrimaryButton({
       ) : (
         <Text style={[styles.buttonText, { color: palette.fg }]}>{title}</Text>
       )}
+    </Pressable>
+  );
+}
+
+export function GradientButton({
+  title,
+  onPress,
+  loading,
+  disabled,
+  gradient = "brand",
+}: {
+  title: string;
+  onPress: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+  gradient?: GradientKey;
+}) {
+  const isDisabled = disabled || loading;
+  return (
+    <Pressable onPress={onPress} disabled={isDisabled} style={({ pressed }) => ({ opacity: isDisabled ? 0.5 : pressed ? 0.9 : 1 })}>
+      <LinearGradient
+        colors={gradients[gradient]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.gradientButton}
+      >
+        {loading ? (
+          <ActivityIndicator color={colors.white} />
+        ) : (
+          <Text style={styles.gradientButtonText}>{title}</Text>
+        )}
+      </LinearGradient>
     </Pressable>
   );
 }
@@ -165,6 +198,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   buttonText: { fontSize: 16, fontWeight: "600" },
+  gradientButton: {
+    height: 52,
+    borderRadius: radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  gradientButtonText: { fontSize: 16, fontWeight: "700", color: colors.white },
   field: { marginBottom: spacing.lg },
   fieldLabel: { fontSize: 13, fontWeight: "600", color: colors.textMuted, marginBottom: spacing.xs + 2 },
   input: {

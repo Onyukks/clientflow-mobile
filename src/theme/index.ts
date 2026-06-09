@@ -22,6 +22,21 @@ export const colors = {
   white: "#FFFFFF",
 } as const;
 
+// Vibrant gradient palettes (purple→blue family + accent gradients for cards).
+export const gradients = {
+  header: ["#7C3AED", "#4F46E5", "#2563EB"] as const,
+  brand: ["#6D28D9", "#2563EB"] as const,
+  emerald: ["#34D399", "#059669"] as const,
+  indigo: ["#818CF8", "#4F46E5"] as const,
+  amber: ["#FBBF24", "#F97316"] as const,
+  rose: ["#FB7185", "#E11D48"] as const,
+  violet: ["#A78BFA", "#7C3AED"] as const,
+  sky: ["#38BDF8", "#0EA5E9"] as const,
+  slate: ["#64748B", "#334155"] as const,
+};
+
+export type GradientKey = keyof typeof gradients;
+
 export const spacing = {
   xs: 4,
   sm: 8,
