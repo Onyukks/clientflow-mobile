@@ -110,14 +110,17 @@ export function GradientButton({
 export function Field({
   label,
   error,
+  multiline,
   ...inputProps
 }: { label: string; error?: string } & TextInputProps) {
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
-        style={[styles.input, error ? styles.inputError : null]}
+        style={[styles.input, multiline ? styles.inputMultiline : null, error ? styles.inputError : null]}
         placeholderTextColor={colors.textFaint}
+        multiline={multiline}
+        textAlignVertical={multiline ? "top" : undefined}
         {...inputProps}
       />
       {error ? <Text style={styles.fieldError}>{error}</Text> : null}
@@ -216,6 +219,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text,
     backgroundColor: colors.surface,
+  },
+  inputMultiline: {
+    height: undefined,
+    minHeight: 110,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.md,
   },
   inputError: { borderColor: colors.danger },
   fieldError: { color: colors.danger, fontSize: 12, marginTop: spacing.xs },
